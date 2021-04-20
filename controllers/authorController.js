@@ -1,22 +1,32 @@
 //link to author model
-const authors = require('../models/author')
+const authors = require("mongoose")
+
+//import author model
+const Author = mongoose.model("Author")
 
 //handle request to get all authors
-const getAllAuthors = (req, res) => {
-    res.send(authors) // send list to browser
+const getAllAuthors = async (req, res) => {
+    try {
+        const authors = await Author.find()
+        return res.send(authors)
+    } catch (err) {
+        res.status(400)
+        return res.send("Database query failed")
+    }
 }
 
 // function to handle a req to a particular author
-const getAuthorByID = (req, res) => {
-    //search for author in the db via id
-    const author = authors.find(author => author.id === req.params.id);
-
-    if (author){
-        res.send(author); // send back the author details
-    }
-    else {
-        //currently an emprt list will be sent if author not found
-        res.send([]);
+const getOneAuthor = async (req, res) => {
+    try {
+        const oneAuthor = await Author.findOne( {"authorID":req.params.id} )
+        if(oneAuthor === null) { //no author found in db
+            res.status(404)
+            return res.send("Author not found")
+        }
+        return res.send(oneAuthor) //author was found
+    } catch (err) {
+        res.status(400)
+        return res.send("Database query failed")
     }
 }
 
@@ -31,5 +41,5 @@ const addAuthor = (req, res) => {
 }
 
 module.exports = {
-    getAllAuthors, getAuthorByID, addAuthor
+    getAllAuthors, getOneAuthor, addAuthor
 }
